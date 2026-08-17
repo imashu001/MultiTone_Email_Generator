@@ -1,56 +1,252 @@
 <!DOCTYPE html>
+<html>
+
 <head>
-    <Title>
-        The email generator 
-    </Title>
+    <title>The Email Generator</title>
+
     <style>
         body {
             background-color: lightgray;
         }
+
         .input-box {
             background-color: white;
             width: 80%;
             padding: 20px;
+        }
+
+        .response-box {
+            background-color: white;
+            width: 80%;
+            padding: 20px;
+            margin-top: 20px;
             border: 1px solid black;
+            display: flex;
+            height: 100%;
+        }
+
+        .request-detail{
+            padding: 13px;
+            width: 40%;
+            text-align: left;
+            border: 2px solid black;
+            border-radius: 13px;
+            margin: 2%;
+        }
+        .response-detail{
+            width: 40%;
+            padding: 13px;
+            text-align: left;
+            border: 2px solid black;
+            border-radius: 13px;
+            margin: 2%;
+        }
+
+        .generated-email {
+            white-space: pre-wrap;
         }
     </style>
 </head>
-<body>
-    <H1>Email generator</H1>
-    <p>Just put your content overview and select the tone and press submit you will have your email generated to directly use </p>
-    <br />
-    <input class="input-box" id="email-content-input"></input>
-    <br/>
-        <input type="radio" name="email-tone" value="Formal">Formal</input >
-        <input type="radio" name="email-tone" value="Casual">Casual</input >
-        <input type="radio" name="email-tone" value="Aggressive">Aggressive</input >
-        <input type="radio" name="email-tone" value="Empathetic">Empathetic</input >
 
-        <button onclick="submitForm()">Submit</button>
+<body>
+
+    <h1>Email generator</h1>
+
+    <p>
+        Just put your content overview and select the tone and press submit
+        you will have your email generated to directly use.
+    </p>
+
+    <!-- Everything that should be locked -->
+    <div id="form-container">
+
+        <br>
+
+        <input
+            class="input-box"
+            id="email-content-input"
+            type="text"
+        >
+
+        <br><br>
+
+        <input type="radio" name="email-tone" value="Formal">
+        Formal
+
+        <input type="radio" name="email-tone" value="Casual">
+        Casual
+
+        <input type="radio" name="email-tone" value="Aggressive">
+        Aggressive
+
+        <input type="radio" name="email-tone" value="Empathetic">
+        Empathetic
+
+        <br><br>
+
+        <button id="submit-button" onclick="submitForm()">
+            Submit
+        </button>
+
+    </div>
+
+    <!-- Response -->
+    <div class="response-box">
+
+        <div class="request-detail">
+            <strong>Email request detail:</strong>
+
+            <p id="request-detail"></p>
+        </div>
+
+        <hr>
+
+        <div class="response-detail">
+            <strong>Generated Email:</strong>
+
+            <p>
+                <strong>Subject:</strong>
+                <span id="email-subject"></span>
+            </p>
+
+            <p>
+                <strong>Body:</strong>
+            </p>
+
+            <div
+                id="email-body"
+                class="generated-email"
+            ></div>
+        </div>
+
+    </div>
+
 
     <script>
-        async function submitForm(){
-            var emailContentInput = document.getElementById("email-content-input").value
-            var emailTone = document.querySelector('input[name="email-tone"]:checked').value;
 
-            const response = await fetch("http://127.0.0.1:8000/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    tone: emailTone,
-                    input: emailContentInput
-                })
+        async function submitForm() {
+
+            const emailContentInput =
+                document.getElementById("email-content-input").value;
+
+            const selectedTone =
+                document.querySelector(
+                    'input[name="email-tone"]:checked'
+                );
+
+            // Make sure tone is selected
+            if (!selectedTone) {
+                alert("Please select an email tone.");
+                return;
+            }
+
+            const emailTone = selectedTone.value;
+
+            const formContainer =
+                document.getElementById("form-container");
+
+            const submitButton =
+                document.getElementById("submit-button");
+
+
+            // --------------------------------
+            // LOCK UI
+            // --------------------------------
+
+            const controls =
+                formContainer.querySelectorAll("input, button");
+
+            controls.forEach(control => {
+                control.disabled = true;
             });
 
-        const data = await response.json();
+            submitButton.innerText = "Generating...";
 
-        console.log(data);
+
+            try {
+
+                // --------------------------------
+                // CALL FASTAPI
+                // --------------------------------
+
+                const response = await fetch(
+                    "http://127.0.0.1:8000/",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            tone: emailTone,
+                            input: emailContentInput
+                        })
+                    }
+                );
+
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Server error: ${response.status}`
+                    );
+                }
+
+
+                const data = await response.json();
+
+                console.log(data);
+
+
+                // --------------------------------
+                // DISPLAY REQUEST
+                // --------------------------------
+
+                document.getElementById(
+                    "request-detail"
+                ).textContent =
+                    `Tone: ${emailTone}\n` +
+                    `Request: ${emailContentInput}`;
+
+
+                // --------------------------------
+                // DISPLAY GENERATED EMAIL
+                // --------------------------------
+
+                document.getElementById(
+                    "email-subject"
+                ).textContent = data.subject;
+
+
+                document.getElementById(
+                    "email-body"
+                ).textContent = data.body;
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Something went wrong while generating the email."
+                );
+
+            } finally {
+
+                // --------------------------------
+                // UNLOCK UI
+                // --------------------------------
+
+                controls.forEach(control => {
+                    control.disabled = false;
+                });
+
+                submitButton.innerText = "Submit";
+            }
         }
-
 
     </script>
 
 </body>
+
 </html>
