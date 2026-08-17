@@ -29,10 +29,27 @@
         <button onclick="submitForm()">Submit</button>
 
     <script>
-        function submitForm(){
+        async function submitForm(){
             var emailContentInput = document.getElementById("email-content-input").value
             var emailTone = document.querySelector('input[name="email-tone"]:checked').value;
+
+            const response = await fetch("http://127.0.0.1:8000/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    tone: emailTone,
+                    input: emailContentInput
+                })
+            });
+
+        const data = await response.json();
+
+        console.log(data);
         }
+
+
     </script>
 
 </body>
