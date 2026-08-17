@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<head>
+    <Title>
+        The email generator 
+    </Title>
+    <style>
+        body {
+            background-color: lightgray;
+        }
+        .input-box {
+            background-color: white;
+            width: 80%;
+            padding: 20px;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <H1>Email generator</H1>
+    <p>Just put your content overview and select the tone and press submit you will have your email generated to directly use </p>
+    <br />
+    <input class="input-box" id="email-content-input"></input>
+    <br/>
+        <input type="radio" name="email-tone" value="Formal">Formal</input >
+        <input type="radio" name="email-tone" value="Casual">Casual</input >
+        <input type="radio" name="email-tone" value="Aggressive">Aggressive</input >
+        <input type="radio" name="email-tone" value="Empathetic">Empathetic</input >
+
+        <button onclick="submitForm()">Submit</button>
+
+    <script>
+        function submitForm(){
+            var emailContentInput = document.getElementById("email-content-input").value
+            var emailTone = document.querySelector('input[name="email-tone"]:checked').value;
+        }
+    </script>
+
+</body>
+</html>
